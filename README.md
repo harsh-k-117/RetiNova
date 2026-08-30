@@ -291,7 +291,9 @@ RetiNova/
 ## Team
 
 **Team Name:** RetiNova
+
 **Problem Statement:** 26038 — Explainable AI for Diabetic Retinopathy Screening in Rural India
+
 **Organization:** MathWorks
 
 **Team Members:**
