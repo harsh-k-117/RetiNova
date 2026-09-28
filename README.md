@@ -1,6 +1,6 @@
-# RetiNova — Explainable AI for Diabetic Retinopathy Screening in Rural India
+# RetiNova — Explainable AI for Diabetic Retinopathy Screening
 
-**Smart India Hackathon 2026**
+**Smart India Hackathon 2026 · Problem Statement 26038 (MathWorks, MedTech / BioTech / HealthTech)**
 
 | | |
 |---|---|
@@ -10,54 +10,56 @@
 | **Organization** | MathWorks |
 | **Team Name** | RetiNova |
 
+RetiNova is an explainable AI-powered screening system for Diabetic Retinopathy, built entirely in MATLAB. It provides automated quality checks, DR severity grading, and visual explanations to support clinical decision-making in rural healthcare settings.
+
+> **Prototype for educational and research purposes. Clinical validation required for deployment.**
+
 ---
 
 ## Table of Contents
 
 - [Problem Background](#problem-background)
-- [What This Project Does](#what-this-project-does)
+- [Our Solution](#our-solution)
 - [Why This Matters](#why-this-matters)
+- [Key Features](#key-features)
 - [System Pipeline](#system-pipeline)
-- [Technical Approach](#technical-approach)
 - [Tech Stack](#tech-stack)
 - [Design Targets](#design-targets)
-- [Feasibility and Challenges](#feasibility-and-challenges)
-- [Impact and Benefits](#impact-and-benefits)
-- [Datasets](#datasets)
-- [Technical Foundations / References](#technical-foundations--references)
-- [Project Structure](#project-structure)
+- [Repository Layout](#repository-layout)
 - [Getting Started](#getting-started)
-- [Roadmap](#roadmap)
+- [Datasets](#datasets)
+- [Impact and Benefits](#impact-and-benefits)
+- [Future Roadmap](#future-roadmap)
 - [Team](#team)
+- [Disclaimer](#disclaimer)
 
 ---
 
 ## Problem Background
 
-India has more than 77 million diabetic adults, the second highest number in the world. Around 18% of them develop Diabetic Retinopathy (DR), which is one of the leading causes of preventable blindness. Early screening can prevent up to 90% of vision loss caused by DR, but India has only about 1 ophthalmologist per 100,000 people in rural areas. This makes manual, large-scale screening practically impossible.
+India has more than **77 million diabetic adults**, the second highest number globally. Around 18% develop Diabetic Retinopathy (DR), a leading cause of preventable blindness. Early screening can prevent **up to 90% of vision loss**, but India has only about **1 ophthalmologist per 100,000 people** in rural areas.
 
-Most existing AI-based DR screening tools have three big problems:
+**The Challenge:**
+- Manual screening is impossible at scale
+- Existing AI tools are "black boxes" that don't explain their decisions
+- Low-quality images from portable cameras break most AI systems
+- Delayed diagnosis leads to irreversible vision loss
 
-1. They work as **black boxes** — doctors cannot see *why* the AI made a prediction.
-2. They are **not clinically validated** rigorously enough for real deployment.
-3. They **break down on real-world images** — fundus photos taken with portable cameras in rural camps are often poorly lit, out of focus, or partially obstructed.
-
-RetiNova is built to solve exactly these three problems.
+**RetiNova addresses all these challenges with explainable AI built on MATLAB.**
 
 ---
 
-## What This Project Does
+## Our Solution
 
-RetiNova is a MATLAB and Simulink based pipeline that screens retinal (fundus) images for Diabetic Retinopathy and explains its reasoning to the doctor, instead of just giving a number.
+RetiNova is an end-to-end MATLAB pipeline that:
 
-In short, it:
-
-- Checks whether a retinal image is good enough to analyze, and asks for a recapture if not.
-- Enhances and cleans the image.
-- Detects retinal structures and DR-related lesions (vessels, microaneurysms, exudates, hemorrhages, neovascularization).
-- Grades DR severity on the standard 5-level clinical scale (0–4).
-- Shows *visual evidence* (via Grad-CAM) for every prediction, so a doctor can verify it in under 30 seconds.
-- Simulates the full telemedicine workflow in Simulink to help health departments plan bandwidth, staffing, and doctor review capacity.
+1. **Validates image quality** before analysis (sharpness, brightness, exposure)
+2. **Preprocesses and enhances** fundus images for optimal analysis
+3. **Detects retinal structures** (vessels, optic disc, lesions)
+4. **Grades DR severity** on the International Clinical DR Scale (0–4)
+5. **Explains every prediction** with Grad-CAM visual heatmaps
+6. **Provides referral recommendations** based on clinical thresholds
+7. **Simulates telemedicine workflows** to help health programs plan resources
 
 ---
 
@@ -65,187 +67,168 @@ In short, it:
 
 | Problem | How RetiNova Helps |
 |---|---|
-| Very few ophthalmologists in rural India | AI does the first-level screening, doctors only review flagged/high-risk cases |
-| Portable camera images are often low quality | Built-in quality check + enhancement step before analysis |
-| Black-box AI reduces doctor trust | Grad-CAM + lesion evidence + confidence score with every result |
-| Delayed diagnosis leads to vision loss | Faster triage means faster referral and earlier treatment |
-| District health programs lack planning data | Simulink model estimates bandwidth, processing time, and doctor workload |
+| Very few ophthalmologists in rural India | AI performs first-level screening; doctors review only flagged cases |
+| Poor image quality from portable cameras | Built-in quality validation and enhancement pipeline |
+| Black-box AI reduces clinician trust | Grad-CAM shows exactly where abnormalities were detected |
+| Delayed diagnosis causes vision loss | Faster triage enables earlier treatment and referral |
+| Limited healthcare planning data | Simulink workflow models estimate capacity and resources |
+
+---
+
+## Key Features
+
+### 🔍 **Intelligent Image Quality Assessment**
+- Automatic validation of sharpness, brightness, contrast, and exposure
+- Rejects ungradable images and requests recapture
+- Calibrated thresholds based on real clinical datasets
+
+### 🧠 **AI-Powered DR Grading**
+- 5-level classification (Grade 0–4) using International Clinical DR Scale
+- Ensemble model architecture for robust predictions
+- Trained on IDRiD dataset with proper validation methodology
+
+### 💡 **Explainable AI with Grad-CAM**
+- Visual heatmaps highlight regions influencing predictions
+- Helps clinicians verify AI reasoning in under 30 seconds
+- Interactive opacity slider for overlay adjustment
+
+### 🩺 **Clinical Decision Support**
+- Clear referral flags for Grade ≥ 2 (referable DR)
+- Probability scores across all severity levels
+- Confidence metrics for each prediction
+
+### 🖥️ **Interactive Review Application**
+- Clean MATLAB UI for clinician workflow
+- Side-by-side original image and Grad-CAM overlay
+- Real-time quality assessment and grading
+
+### 🏥 **Telemedicine Workflow Simulation**
+- Simulink model for screening workflow optimization
+- Helps district health programs plan bandwidth and staffing
+- Estimates processing time and ophthalmologist workload
 
 ---
 
 ## System Pipeline
 
-The core idea is a straight-line pipeline, from image capture to a doctor's decision:
+The complete screening workflow from image capture to clinical decision:
 
 ```
-Fundus Image
-      │
-      ▼
-Quality Check  ──── (fails) ──► Recapture Request
-      │ (passes)
-      ▼
-Image Enhancement (CLAHE, denoising, illumination correction)
-      │
-      ▼
-Retinal Analysis (vessels, optic disc/fovea, microaneurysms,
-                   exudates, hemorrhages, neovascularization)
-      │
-      ▼
-DR Grading (Level 0 – 4, International Clinical DR Scale)
-      │
-      ▼
-Explainable AI (Grad-CAM heatmap + lesion evidence + confidence score)
-      │
-      ▼
-Clinician Review (< 30 seconds)
-      │
-      ▼
-Referral Decision
+┌─────────────────────┐
+│  Fundus Image       │
+│  (Portable Camera)  │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Quality Check      │◄─── Fails? Request Recapture
+└──────────┬──────────┘
+           │ Passes
+           ▼
+┌─────────────────────┐
+│  Image Enhancement  │
+│  (CLAHE, Denoise,   │
+│   Illumination Fix) │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Retinal Analysis   │
+│  • Vessels          │
+│  • Optic Disc       │
+│  • Lesions          │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  DR Grading (0-4)   │
+│  + Grad-CAM         │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Clinician Review   │
+│  (<30 seconds)      │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Referral Decision  │
+└─────────────────────┘
 ```
-
-### 7-Step Technical Methodology
-
-| Step | Stage | What Happens |
-|---|---|---|
-| 1 | **Image Input** | Retinal images captured using a portable fundus camera at PHCs (Primary Health Centres) or rural health camps |
-| 2 | **Quality Check** | Focus, illumination, and field of view are checked. Poor-quality images are flagged for recapture |
-| 3 | **Image Processing** | Brightness/contrast correction, noise reduction, and detail enhancement |
-| 4 | **Retinal Analysis** | Detection of vessels, optic disc/fovea, microaneurysms, exudates, hemorrhages, and neovascularization |
-| 5 | **AI Grading** | Classification into 5 DR severity levels (0–4) using the International Clinical DR Severity Scale |
-| 6 | **Explainable AI** | Grad-CAM heatmaps, lesion-level evidence, confidence scores, and an auto-generated annotated report |
-| 7 | **Telemedicine Simulation (Simulink)** | Models image flow, bandwidth usage, processing time, and ophthalmologist review capacity |
-
----
-
-## Technical Approach
-
-**Core Tools:** MATLAB, MATLAB Toolboxes, and Simulink, used for image processing, AI model development, medical imaging analysis, and system-level simulation.
-
-**Toolboxes used:**
-- Image Processing Toolbox
-- Computer Vision Toolbox
-- Deep Learning Toolbox
-- Medical Imaging Toolbox
-- Simulink
-- Statistics and Machine Learning Toolbox
-
-The pipeline is built as a set of modular stages (quality check → enhancement → analysis → grading → explainability), so each stage can be independently tested, validated, and swapped/improved without breaking the rest of the system. The final telemedicine workflow (bandwidth, review time, doctor workload) is modeled separately in Simulink so district health programs can simulate different deployment scenarios before rolling the system out.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
+| Component | Technology |
 |---|---|
-| Image Processing | MATLAB Image Processing Toolbox |
-| Computer Vision / Segmentation | MATLAB Computer Vision Toolbox |
-| Deep Learning / DR Grading | MATLAB Deep Learning Toolbox |
-| Medical Imaging Specific Tools | MATLAB Medical Imaging Toolbox |
-| Statistical Validation | Statistics and Machine Learning Toolbox |
-| Workflow / Telemedicine Simulation | Simulink |
-| Explainability | Grad-CAM (Gradient-weighted Class Activation Mapping) |
-| Clinical Standard | International Clinical DR Severity Scale |
+| **Core Platform** | MATLAB (R2023a+) |
+| **Image Processing** | Image Processing Toolbox |
+| **Computer Vision** | Computer Vision Toolbox |
+| **Deep Learning** | Deep Learning Toolbox, ONNX Model Support |
+| **Medical Imaging** | Medical Imaging Toolbox |
+| **Statistics** | Statistics and Machine Learning Toolbox |
+| **Workflow Simulation** | Simulink / SimEvents |
+| **Explainability** | Grad-CAM (Gradient-weighted Class Activation Mapping) |
+| **Hardware** | CUDA-capable GPU for training (inference works on CPU) |
 
 ---
 
 ## Design Targets
 
-These are the performance goals the system is designed to meet:
+Performance goals aligned with clinical requirements:
 
-| Metric | Target |
-|---|---|
-| Sensitivity | > 90% |
-| Specificity | > 85% |
-| Referable DR Threshold | Level 2 and above |
-| Doctor Review Time per Image | < 30 seconds |
-
----
-
-## Feasibility and Challenges
-
-| Challenge | Our Approach |
-|---|---|
-| Poor image quality from field cameras | Quality check + image enhancement before analysis |
-| Tiny lesions (microaneurysms) are hard to detect | Multi-scale lesion analysis |
-| Uneven/imbalanced training data | Balanced training strategy + proper evaluation metrics |
-| Black-box AI reduces trust | Grad-CAM + lesion-level evidence |
-| Limited doctors and network bandwidth in rural areas | Human-in-the-loop review + Simulink-based resource planning |
-
-**Feasibility highlights:**
-- **Software:** MATLAB natively supports AI, image processing, and simulation in one environment.
-- **Data:** Public datasets (APTOS, IDRiD, DRIVE, Messidor-2) provide real retinal images for training and validation.
-- **Deployment:** Designed specifically for portable fundus cameras, PHCs, and telemedicine setups, not high-end hospital equipment.
-- **Validation:** Tested on separate datasets and unseen images to avoid overfitting and to check real-world generalization.
+| Metric | Target | Notes |
+|---|---|---|
+| **Sensitivity** | > 90% | For referable DR detection (Grade ≥ 2) |
+| **Specificity** | > 85% | Minimize unnecessary referrals |
+| **Review Time** | < 30 seconds | Per image with Grad-CAM |
+| **Quality Rejection** | Automatic | Prevent ungradable image analysis |
 
 ---
 
-## Impact and Benefits
-
-**Target Users:** Rural diabetic patients, PHCs & ASHA workers, tele-ophthalmologists, and district health programs.
-
-| Stakeholder | Impact |
-|---|---|
-| **Rural Diabetic Patients** | Earlier DR detection → faster referral → earlier treatment → lower risk of vision loss |
-| **PHCs & ASHA Workers** | AI-assisted screening, more patients screened, doctors focus only on high-risk cases, supports telemedicine |
-| **Tele-Ophthalmologists** | Explainable AI, better understanding of the AI's decision, faster result verification, evidence-based decisions |
-| **District Health Programs** | Simulink-based resource planning, better bandwidth usage, better doctor workload planning |
-
-**End-to-end value chain:**
-
-```
-Rural Fundus Image → AI Screening → Explainable Evidence → Doctor Validation → Early Referral → Vision Preservation
-```
-
----
-
-## Datasets
-
-The following publicly available datasets are used for training and validation:
-
-1. **APTOS 2019 Blindness Detection**
-   https://www.kaggle.com/c/aptos2019-blindness-detection
-
-2. **IDRiD — Indian Diabetic Retinopathy Image Dataset**
-   https://ieeedataport.org/open-access/indian-diabetic-retinopathy-image-dataset-idrid
-
-3. **DRIVE — Digital Retinal Images for Vessel Extraction**
-   https://drive.grand-challenge.org/
-
-4. **Messidor-2**
-   https://www.adcis.net/en/third-party/messidor2/
-
-> Note: These datasets are used strictly for training/validation purposes and are subject to their respective licenses and terms of use.
-
----
-
-## Technical Foundations / References
-
-- International Clinical DR Severity Scale
-- Grad-CAM for explainable AI
-- Retinal vessel segmentation techniques
-- Fundus image quality assessment methods
-- Medical image enhancement (CLAHE, denoising, illumination correction)
-- Deep learning for retinal lesion detection
-- MATLAB / Simulink based workflow simulation
-
----
-
-## Project Structure
-
-Structured folder layout of the repository :
+## Repository Layout
 
 ```
 RetiNova/
-├── data/                      # Dataset references / sample images (not the full datasets)
-├── quality_check/             # Image quality assessment scripts
-├── preprocessing/             # Image enhancement (CLAHE, denoising, etc.)
-├── segmentation/              # Vessel, optic disc, lesion detection
-├── grading/                   # DR severity classification model
-├── explainability/            # Grad-CAM and report generation
-├── simulink_model/            # Telemedicine workflow simulation (.slx files)
-├── docs/                      # Slide deck, problem statement, documentation
-├── results/                   # Sample outputs, validation reports
-└── README.md
+├── drGradingPrototype.m          # Main UI application
+├── predictIDRiDGrader.m          # Inference with the fold ensemble + Grad-CAM
+├── trainIDRiDGrader.m            # 3-fold cross-validated training and out-of-fold report
+├── assessQuality.m               # Image quality module
+├── preprocessIDRiDImage.m        # Image preprocessing used for caching / inference
+├── blendCamOverlay.m             # Heatmap blending for the app
+├── computeGradCAM.m              # Grad-CAM computation
+├── lesionSaliencyMap.m           # Heuristic lesion heatmap
+├── loadDemoGradingNetwork.m      # Demo network loader (when models missing)
+│
+├── segmentation/                 # Segmentation module
+│   ├── segmentVessels.m          # Vessel segmentation
+│   └── loadIDRiDSegmentation.m   # Lesion mask loader
+│
+├── test/                         # Development & testing scripts
+│   ├── main.m                    # Alternative training script (older version)
+│   ├── demoGradeScores.m         # Placeholder scoring (for demo mode)
+│   ├── loadIDRiDGradingData.m    # Data loader utility
+│   ├── test.m                    # Manual testing
+│   ├── demo.m                    # Quality analysis
+│   ├── evaluateVesselsDrive.m    # Vessel evaluation
+│   ├── evaluateDrDetectOnIdrid.m # ONNX testing
+│   ├── testDrDetectOnnx.m        # ONNX import test
+│   └── evaluateIDRiDGrader.m     # Model evaluation
+│
+├── models/                       # Trained models (generated)
+│   └── idrid_grade5/             # Training artifacts
+│
+├── data/                         # Datasets (download separately)
+│   ├── B. Disease Grading/       # IDRiD grading
+│   └── A. Segmentation/          # IDRiD segmentation
+│
+├── +efficientnet_b0_regression_512px/  # Auto-generated MATLAB code
+├── README.md
+├── MATLAB_GRADING.md
+├── SIH-Pitch-deck-RetiNova.pptx
+└── Prototype demo video.mp4
 ```
 
 ---
@@ -254,37 +237,152 @@ RetiNova/
 
 ### Prerequisites
 
-- MATLAB (R2023a or later recommended)
+**MATLAB Toolboxes Required:**
+- Deep Learning Toolbox
 - Image Processing Toolbox
 - Computer Vision Toolbox
-- Deep Learning Toolbox
-- Medical Imaging Toolbox
 - Statistics and Machine Learning Toolbox
-- Simulink
+- Parallel Computing Toolbox (for GPU training)
+- Deep Learning Toolbox Converter for ONNX Model Format
 
-### Steps
+**Hardware:**
+- CUDA-capable GPU recommended for training
+- CPU sufficient for inference/demo
 
-1. Clone this repository:
+### Installation
+
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/harsh-k-117/RetiNova.git
    cd RetiNova
    ```
-2. Open the project in MATLAB.
-3. Download the required datasets (see [Datasets](#datasets)) and place them in the `data/` folder.
-4. Run the quality check and preprocessing scripts on a sample image.
-5. Run the DR grading model to get a severity classification.
-6. Open `simulink_model/` to explore the telemedicine workflow simulation.
+
+2. **Open in MATLAB:**
+   ```matlab
+   cd '/path/to/RetiNova'
+   ```
+
+3. **Download datasets** (see [Datasets](#datasets) section below)
+
+### Running the Application
+
+**Launch the interactive UI:**
+```matlab
+drGradingPrototype
+```
+
+**The app allows you to:**
+- Load fundus images from disk or use sample images
+- Automatically assess image quality
+- View DR grade predictions with confidence scores
+- Explore Grad-CAM explanations with adjustable opacity
+- See referral recommendations
+
+**Training a new model:**
+```matlab
+trainIDRiDGrader  % 3-fold cross-validation
+```
 
 ---
 
-## Roadmap
+## Datasets
 
-- [ ] Finalize image quality assessment module
-- [ ] Train and validate DR grading model against target sensitivity/specificity
-- [ ] Integrate Grad-CAM explainability module
-- [ ] Build and test Simulink telemedicine workflow model
-- [ ] Validate against published benchmarks
-- [ ] Field testing with sample rural fundus images
+RetiNova uses publicly available retinal imaging datasets:
+
+### Primary Dataset
+
+**IDRiD (Indian Diabetic Retinopathy Image Dataset)**
+- 516 high-resolution fundus images
+- DR grading labels (0–4)
+- Lesion segmentation masks
+- Source: https://ieeedataport.org/open-access/indian-diabetic-retinopathy-image-dataset-idrid
+- License: Research use (IEEE DataPort terms)
+
+### Additional Validation Datasets
+
+1. **APTOS 2019 Blindness Detection**
+   - https://www.kaggle.com/c/aptos2019-blindness-detection
+   - Large-scale DR grading dataset
+
+2. **DRIVE (Digital Retinal Images for Vessel Extraction)**
+   - https://drive.grand-challenge.org/
+   - Vessel segmentation ground truth
+
+3. **Messidor-2**
+   - https://www.adcis.net/en/third-party/messidor2/
+   - External validation dataset
+
+### Data Setup
+
+Download IDRiD and extract to `data/` folder:
+
+```
+data/B. Disease Grading/B. Disease Grading/
+    1. Original Images/
+        a. Training Set/   (413 images)
+        b. Testing Set/    (103 images)
+    2. Groundtruths/
+        a. IDRiD_Disease Grading_Training Labels.csv
+        b. IDRiD_Disease Grading_Testing Labels.csv
+```
+
+> **Note:** Datasets are subject to their respective licenses. Use only for research/educational purposes.
+
+---
+
+## Impact and Benefits
+
+### Target Users
+
+| Stakeholder | Benefit |
+|---|---|
+| **Rural Diabetic Patients** | Earlier detection → Faster treatment → Vision preservation |
+| **Primary Health Centers** | AI-assisted screening enables examination of more patients |
+| **ASHA Workers** | Simple tool for first-level screening in community settings |
+| **Tele-Ophthalmologists** | Explainable predictions enable faster, confident reviews |
+| **District Health Programs** | Workflow simulation helps optimize resources and planning |
+
+### Value Proposition
+
+**End-to-End Impact:**
+```
+Rural Fundus Capture → AI Quality Check → Automated Screening 
+→ Visual Explanation → Clinician Validation → Timely Referral 
+→ Early Treatment → Vision Preservation
+```
+
+**Key Advantages:**
+- ✅ Built on trusted MATLAB platform (familiar to engineers & researchers)
+- ✅ Explainable AI increases clinician trust and adoption
+- ✅ Quality checks prevent analysis of unusable images
+- ✅ Designed for resource-constrained rural settings
+- ✅ Simulink workflow modeling enables deployment planning
+
+---
+
+## Future Roadmap
+
+### Phase 1: Validation & Refinement
+- [ ] External dataset validation (APTOS, Messidor-2)
+- [ ] Quantitative Grad-CAM evaluation against lesion masks
+- [ ] Clinical validation with ophthalmologist feedback
+
+### Phase 2: Enhanced Features
+- [ ] Real-time lesion detection and localization
+- [ ] Multi-disease screening (glaucoma, AMD)
+- [ ] Mobile app integration for field workers
+
+### Phase 3: Deployment
+- [ ] Simulink telemedicine workflow implementation
+- [ ] Cloud deployment for PHC connectivity
+- [ ] Field pilot in rural health camps
+- [ ] Integration with existing health information systems
+
+### Phase 4: Scale & Impact
+- [ ] Multi-language support (Hindi, regional languages)
+- [ ] Training programs for ASHA workers
+- [ ] Government health department partnerships
+- [ ] National-scale deployment planning
 
 ---
 
@@ -292,16 +390,56 @@ RetiNova/
 
 **Team Name:** RetiNova
 
-**Problem Statement:** 26038 — Explainable AI for Diabetic Retinopathy Screening in Rural India
-
-**Organization:** MathWorks
-
 **Team Members:**
-1. Harsh Kulkarni (**Leader**)
+1. **Harsh Kulkarni** — Team Leader
 2. Prathamesh Devkar
 3. Vihaan Aptekar
 4. Sanika Chowdhary
 5. Shravani Dhadge
 6. Shreyas Gade
 
+**Institution:** [Your Institution Name]
+
+**Contact:** [Team Contact Email]
+
 ---
+
+## Licensing and Attribution
+
+### Model Weights
+The EfficientNet-B0 backbone is derived from `adarshcod30/drdetect-dr-screening` (Hugging Face), licensed for **research use only**. Not licensed for clinical or commercial deployment.
+
+### Datasets
+- **IDRiD**: IEEE DataPort terms of use
+- **APTOS 2019**: Kaggle competition rules
+- **DRIVE**: Challenge terms and conditions
+- **Messidor-2**: ADCIS third-party usage terms
+
+All datasets must be cited appropriately in publications and presentations.
+
+### Code
+This project is developed for Smart India Hackathon 2026. Please contact the team for licensing inquiries.
+
+---
+
+## Disclaimer
+
+⚠️ **IMPORTANT MEDICAL DISCLAIMER**
+
+This is a **research prototype** developed for an educational hackathon. It has **NOT** been:
+- Clinically validated in real-world settings
+- Approved by regulatory authorities (FDA, CDSCO, etc.)
+- Certified as a medical device
+
+**DO NOT USE** for:
+- Clinical diagnosis or treatment decisions
+- Patient triage without clinician oversight
+- Replacement of professional ophthalmological examination
+
+All predictions **MUST** be reviewed and confirmed by a qualified ophthalmologist. This system is intended as a **decision support tool** only, not a replacement for medical judgment.
+
+---
+
+**Built with ❤️ for Smart India Hackathon 2026**
+
+*Making quality eye care accessible to rural India through explainable AI*
