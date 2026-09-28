@@ -5,7 +5,7 @@
 %   Augmentation-balanced training WITHOUT class weighting.
 %
 % Strategy:
-%   - 3-fold stratified CV
+%   - 5-fold stratified CV
 %   - Inner 15%% split for early stopping
 %   - Square-root class balancing by repeated training rows
 %   - Random image augmentation applied to repeated rows
@@ -554,6 +554,9 @@ for fold = 1:numFolds
 
                 batchTry = ...
                     nextBatch;
+
+                % Keep ValidationFrequency at once per epoch for the new batch size.
+                stepsPerEpoch = max(1, ceil(numel(balancedRows) / batchTry));
 
                 trainAug.MiniBatchSize = ...
                     batchTry;

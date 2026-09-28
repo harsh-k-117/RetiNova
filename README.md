@@ -163,7 +163,7 @@ The complete screening workflow from image capture to clinical decision:
 
 | Component | Technology |
 |---|---|
-| **Core Platform** | MATLAB (R2023a+) |
+| **Core Platform** | MATLAB (R2024a+) |
 | **Image Processing** | Image Processing Toolbox |
 | **Computer Vision** | Computer Vision Toolbox |
 | **Deep Learning** | Deep Learning Toolbox, ONNX Model Support |
@@ -280,7 +280,7 @@ drGradingPrototype
 
 **Training a new model:**
 ```matlab
-trainIDRiDGrader  % 3-fold cross-validation
+trainIDRiDGrader  % 5-fold cross-validation
 ```
 
 ---

@@ -56,7 +56,7 @@ alphaSlider = uislider(sliderPanel, 'Limits', [0 1], 'Value', 0.62, ...
 right = uipanel(body, 'Title', 'Model output', 'FontWeight', 'bold', ...
     'BackgroundColor', [1 1 1]);
 rightGrid = uigridlayout(right, [8 1]);
-rightGrid.RowHeight = {58, 26, 26, 36, 8, '1x', 40, 36};
+rightGrid.RowHeight = {58, 26, 26, 36, 8, '1x', 80, 36};
 rightGrid.Padding = [14 12 14 12];
 gradeLabel = uilabel(rightGrid, 'Text', 'Waiting for image', ...
     'FontSize', 20, 'FontWeight', 'bold', 'FontColor', [0.05 0.12 0.18], ...
@@ -192,7 +192,7 @@ uilabel(rightGrid, 'Text', ...
         end
         qualityLabel.Text = 'Image quality: gradable';
         metricsLabel.Text = '';
-        noteLabel.Text = result.message;
+        noteLabel.Text = sprintf('%s %s', noteLabel.Text, result.message);
         drawScoreChart(axScores, result);
         showOverlay(result, alphaSlider.Value);
     end

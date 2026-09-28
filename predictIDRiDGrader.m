@@ -1,7 +1,10 @@
 function result = predictIDRiDGrader(imageInput, modelDir)
 %PREDICTIDRIDGRADER Average trained fold probabilities, or run demo mode.
-%   Uses however many fold-*.mat files are present (3-fold after the
+%   Uses however many fold-*.mat files are present (5-fold after the
 %   current trainer). Softmax is applied only if the net has no softmax layer.
+%   The final grade uses the frozen decoder saved by the trainer: ordinal
+%   expected-grade thresholds, then the grade-4 override
+%   (argmax == grade 4 OR P(grade 4) >= grade4ProbThreshold).
 
 if nargin < 2 || isempty(modelDir)
     projectDir = fileparts(mfilename('fullpath'));
@@ -39,7 +42,7 @@ if ~isempty(foldPaths) && isfile(calibrationPath)
     result = predictTrainedEnsemble(image, modelDir, foldPaths, ...
         quality, gradeNames);
 else
-    result = predictDemo(image, projectDir, quality, gradeNames);
+    result = predictDemo(image, projectDir, modelDir, quality, gradeNames);
 end
 end
 
@@ -50,9 +53,15 @@ nFolds = numel(foldPaths);
 stamp = join(string(foldPaths), '|');
 if isempty(cache) || cache.stamp ~= stamp
     cache = struct('stamp', stamp, 'nets', {{}}, 'inputSize', [], ...
-        'thresholds', [], 'backboneName', '', 'oofAccuracy', [], 'oofQwk', []);
+        'thresholds', [], 'grade4ProbThreshold', [], ...
+        'backboneName', '', 'oofAccuracy', [], 'oofQwk', []);
     cal = load(fullfile(modelDir, 'cross_validation.mat'));
     cache.thresholds = cal.thresholds;
+    % Older models saved before the hybrid decoder have no such field;
+    % they keep the ordinal-only behaviour.
+    if isfield(cal, 'grade4ProbThreshold')
+        cache.grade4ProbThreshold = cal.grade4ProbThreshold;
+    end
     if isfield(cal, 'ordinalMetrics')
         cache.oofAccuracy = cal.ordinalMetrics.accuracy;
         cache.oofQwk = cal.ordinalMetrics.qwk;
@@ -72,23 +81,45 @@ if isempty(cache) || cache.stamp ~= stamp
     end
 end
 
+% Preprocessing does not depend on the fold, so do it once.
+X = preprocessIDRiDImage(image, cache.inputSize);
 meanScores = zeros(1, 5);
 for i = 1:nFolds
-    X = preprocessIDRiDImage(image, cache.inputSize);
     meanScores = meanScores + classScores(cache.nets{i}, X) / nFolds;
 end
 probabilities = meanScores / max(sum(meanScores), eps);
 expectedGrade = probabilities * (0:4)';
 grade = sum(expectedGrade > cache.thresholds);
+
+% Grade-4 override, identical to fitGrade4ProbThreshold in the trainer.
+[~, topClass] = max(probabilities);
+grade4Override = false;
+if ~isempty(cache.grade4ProbThreshold) && ...
+        (topClass == 5 || probabilities(5) >= cache.grade4ProbThreshold)
+    grade4Override = grade < 4;
+    grade = 4;
+end
+
 cam = networkOrLesionCam(cache.nets{1}, image, cache.inputSize, grade, probabilities);
 message = sprintf('Trained %d-fold ensemble. Expected grade %.2f.', nFolds, expectedGrade);
+if grade4Override
+    message = [message ' Grade-4 probability override applied.'];
+end
 result = packResult(false, grade, probabilities, expectedGrade, cam, image, ...
     quality, gradeNames, message, nFolds, cache.backboneName, ...
     cache.oofAccuracy, cache.oofQwk);
 end
 
-function result = predictDemo(image, projectDir, quality, gradeNames)
+function result = predictDemo(image, projectDir, modelDir, quality, gradeNames)
 persistent demoNet demoInputSize
+if exist('demoGradeScores', 'file') ~= 2
+    error('predictIDRiDGrader:noDemoHelper', ...
+        ['Trained models were not found (need fold-*.mat and ' ...
+        'cross_validation.mat in %s) and the demo helper ' ...
+        'demoGradeScores.m is not on the MATLAB path. Run ' ...
+        'trainIDRiDGrader.m or add demoGradeScores.m to the path.'], ...
+        modelDir);
+end
 if isempty(demoNet)
     [demoNet, demoInputSize] = loadDemoGradingNetwork(projectDir);
 end
